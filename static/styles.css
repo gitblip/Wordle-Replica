@@ -1,3 +1,14 @@
+.w-game {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.w-timeselect {
+    display: flex;
+}
+
+
 .w-row {
     display: flex;
     align-items: center;
@@ -34,7 +45,7 @@
     flex: 2;
     align-items: center;
     justify-content: center;
-    font-size: 40px;   
+    font-size: 20px;   
 }
 
 .w-score {
@@ -82,4 +93,55 @@ body {
 
 .yellow {
     background-color: yellow;
+}
+
+.w-left-time {
+    flex-direction: column;
+}
+
+.w-keyboard {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.w-keyboard-row {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+}
+
+.key {
+    width: 45px;
+    height: 55px;
+    border: solid black;
+    border-radius: 5px;
+    background-color: white;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.k-used2 {
+    background-color: green;
+    color: white;
+}
+
+.k-used0 {
+    background-color: gray;
+    color: white;
+}
+
+.k-used1 {
+    background-color: yellow;
+    color: white;
+}
+
+#w-pause {}
+
+#w-theme {}
+
+#onemin {
+
 }

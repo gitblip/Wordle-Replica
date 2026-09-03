@@ -3,6 +3,7 @@ let ans = RandomWord();
 console.log(ans);
 
 let score = 0;
+
 console.log(score);
 
 //Create board
@@ -30,6 +31,8 @@ let guess = "";
 let count = 0;
 
 document.addEventListener("keydown", function(event) {
+    StartTimer();
+    
     console.log(event.key);
     
     if (event.key === "Backspace")
@@ -57,6 +60,9 @@ document.addEventListener("keydown", function(event) {
                 AssignColor(Check, CurrentTile);
                                
                 CurrentRow++;
+
+                //change the keyboard tiles' colour
+                KeyboardColour(Check);
 
                 if (count == 5) {
                     NewBoard();
@@ -125,10 +131,11 @@ function RandomWord() {
 
 //Score
 let scoreboard = document.querySelector(".w-score")
+scoreboard.textContent = "SCORE: " + score;
 
 function IncreaseScore() {
     score++;
-    scoreboard.textContent = "Score: " + score;
+    scoreboard.textContent = "SCORE: " + score;
 }
 
 //New Board:
@@ -149,4 +156,38 @@ function NewBoard() {
     
     console.log(ans);
     console.log(score);
+
+    let keys = document.querySelectorAll(".key");
+    keys.forEach(function(key) {
+        key.classList.remove("k-used0","k-used1", "k-used2");
+    });
+
+}
+
+function KeyboardColour(Check) {
+    for (let a = 0; a < 5; a++) {
+        let letter = guess[a];
+        let tempnum = Check[a];
+
+        let key = document.querySelector(`.key[data-key="${letter}"]`);
+
+        if (!key)
+            continue;
+
+        if (tempnum == 2) {
+            key.classList.remove("k-used0");
+            key.classList.remove("k-used1");
+
+            key.classList.add("k-used2");
+        }
+        else if ( tempnum == 1) {
+            if (!key.classList.contains("k-used2")) {
+                key.classList.remove("k-used0");
+                key.classList.add("k-used1");
+            }            
+        }
+        else 
+            if (!key.classList.contains("k-used2") && !key.classList.contains("k-used1"))
+                key.classList.add("k-used0");
+    }
 }
