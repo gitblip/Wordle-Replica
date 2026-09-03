@@ -1,3 +1,5 @@
+let gameOver = true;
+
 let board = document.getElementById("w-board");
 let ans = RandomWord();
 console.log(ans);
@@ -31,6 +33,9 @@ let guess = "";
 let count = 0;
 
 document.addEventListener("keydown", function(event) {
+    if (gameOver)
+        return;
+
     StartTimer();
     
     console.log(event.key);
@@ -67,11 +72,16 @@ document.addEventListener("keydown", function(event) {
                 if (count == 5) {
                     NewBoard();
                 }
+                else if (CurrentRow == 6) {
+                    gameOver = true;
+                    alert("Out of guesses! The word was " + ans);
+                    console.log("Out of guesses");
+                }
             }
             else console.log("Not a word vro");
         }
     }
-    else if (CurrentTile < (CurrentRow+1)*5 && event.key.length == 1 && event.key.match(/[a-z]/i)) {
+    else if (CurrentRow < 6 && CurrentTile < (CurrentRow+1)*5 && event.key.length == 1 && event.key.match(/[a-z]/i)) {
         tiles[CurrentTile].textContent = event.key.toUpperCase();
         CurrentTile++;
     }
@@ -139,10 +149,10 @@ function IncreaseScore() {
 }
 
 //New Board:
-
 function NewBoard() {
     board.innerHTML = "";
-
+    gameOver = false;
+    
     CurrentTile = 0;
     CurrentRow = 0;
     guess = "";
@@ -164,6 +174,7 @@ function NewBoard() {
 
 }
 
+//change keyboard letters that have been pressed
 function KeyboardColour(Check) {
     for (let a = 0; a < 5; a++) {
         let letter = guess[a];

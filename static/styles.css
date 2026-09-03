@@ -96,6 +96,7 @@ body {
 }
 
 .w-left-time {
+    display: flex;
     flex-direction: column;
 }
 
@@ -136,6 +137,11 @@ body {
 .k-used1 {
     background-color: yellow;
     color: white;
+}
+
+.row-leaderboard {
+    display: flex;
+    flex-direction: column;
 }
 
 #w-pause {}
