@@ -1,0 +1,85 @@
+.w-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex: 2;
+}
+
+.w-tile {
+    width: 70px;
+    height: 70px;
+    border: 2px solid black;
+    font-size: 30px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#w-board {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 5;
+    align-items: center;
+}
+
+.w-timer {
+    width: 140px;
+    height: 70px;
+    border: 2px solid black;
+
+    display: flex;
+    flex: 2;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;   
+}
+
+.w-score {
+    width: 140px;
+    height: 70px;
+    border: 2px solid black;
+
+    display: flex;
+    flex: 2;
+    align-items: center;
+    justify-content: center;
+    
+}
+
+.w-title {
+    width: 500px;
+    height: 70px;
+    border: 2px solid black;
+
+    display: flex;
+    flex: 4;
+    align-items: center;
+    justify-content: center;
+}
+
+.w-header {
+    display: flex;
+    flex: 3;
+    flex-direction: row;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.green {
+    background-color: rgb(24, 219, 34);
+}
+
+.gray {
+    background-color: gray;
+}
+
+.yellow {
+    background-color: yellow;
+}

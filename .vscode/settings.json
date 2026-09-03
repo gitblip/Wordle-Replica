@@ -1,0 +1,6 @@
+{
+    "editor.acceptSuggestionOnCommitCharacter": true,
+    "editor.quickSuggestionsDelay": 10,
+    "editor.suggestOnTriggerCharacters": true,
+    "editor.inlineSuggest.enabled": false
+}
