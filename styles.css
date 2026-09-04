@@ -503,7 +503,8 @@ button,
 
 .history-track::-webkit-scrollbar {
     display: none;
-    
+    width: none;
+    height: none;
 }
 
 html::-webkit-scrollbar {
