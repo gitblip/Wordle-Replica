@@ -133,6 +133,7 @@ function CommitWord(solved) {
     wordHistory.push({ word: ans, solved: solved });
     if (solved) IncreaseScore();
     RenderHistory();
+    RenderTimer();   // practice mode shows the missed count in the timer slot
 }
 
 // Lock input, then swap in a new word once the animations have played.
@@ -203,8 +204,8 @@ function AssignColor(check, CurrentTile) {
 }
 
 function RandomWord() {
-    let index = Math.floor(Math.random() * validWords.length);
-    return validWords[index];
+    let index = Math.floor(Math.random() * acceptable_ans.length);
+    return acceptable_ans[index];
 }
 
 //Score

@@ -5,9 +5,19 @@
 
 /* ---------- CSS Custom Properties (Day Mode) ---------- */
 :root {
-    --bg-top: #7ec8e3;
-    --bg-bottom: #f7c59f;
-    --bg-horizon: linear-gradient(180deg, var(--bg-top) 0%, #aed9e0 40%, #f0e6d3 70%, var(--bg-bottom) 100%);
+    color-scheme: light;
+    /* The page starts AND ends on --bg-edge. Phone browsers tint their top and
+       bottom bars with a single <meta name="theme-color">, so both edges have to
+       be the same colour for the chrome to disappear into the page. The warm
+       horizon sits in the middle, with sky above and water below. */
+    --bg-edge: #7ec8e3;
+    --bg-horizon: linear-gradient(180deg,
+        var(--bg-edge) 0%,
+        #a8d8e8 27%,
+        #e9dcc6 45%,
+        #f7c59f 55%,
+        #b6d4e3 75%,
+        var(--bg-edge) 100%);
     --card-bg: rgba(255, 255, 255, 0.55);
     --card-border: rgba(255, 255, 255, 0.7);
     --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -41,10 +51,16 @@
 }
 
 /* ---------- Night Mode Overrides ---------- */
-body.night-mode {
-    --bg-top: #0b0e2a;
-    --bg-bottom: #1a1040;
-    --bg-horizon: linear-gradient(180deg, var(--bg-top) 0%, #111638 35%, #1e1550 65%, var(--bg-bottom) 100%);
+:root.night-mode {
+    color-scheme: dark;
+    --bg-edge: #0b0e2a;
+    --bg-horizon: linear-gradient(180deg,
+        var(--bg-edge) 0%,
+        #101540 30%,
+        #2a1c5c 47%,
+        #3a2470 55%,
+        #151a46 75%,
+        var(--bg-edge) 100%);
     --card-bg: rgba(20, 20, 50, 0.65);
     --card-border: rgba(100, 100, 180, 0.25);
     --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -84,8 +100,16 @@ body.night-mode {
     box-sizing: border-box;
 }
 
+/* The hidden attribute has to beat the display:flex further down */
+[hidden] {
+    display: none !important;
+}
+
 html {
     -webkit-text-size-adjust: 100%;
+    /* Behind the body: what shows through when the page rubber-bands past its
+       edges, and what the browser samples for its own UI. */
+    background: var(--bg-edge);
 }
 
 body {
@@ -109,19 +133,19 @@ body::after {
     z-index: 0;
     pointer-events: none;
     left: 50%;
-    bottom: 20%;
-    width: 60vw;
-    height: 60vw;
-    max-width: 320px;
-    max-height: 320px;
-    transform: translateX(-50%);
+    top: 52%;
+    width: 62vw;
+    height: 62vw;
+    max-width: 340px;
+    max-height: 340px;
+    transform: translate(-50%, -50%);
     border-radius: 50%;
     background: var(--sun-glow);
     transition: background 0.6s ease;
 }
 
 /* ---------- Stars for Night Mode ---------- */
-body.night-mode::before {
+:root.night-mode body::before {
     content: '';
     position: fixed;
     inset: 0;
@@ -280,6 +304,29 @@ button,
     background: var(--accent);
     color: #fff;
     transform: scale(0.97);
+}
+
+/* Secondary action: the unranked, no-clock mode */
+.practice-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 14px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border: 2px solid var(--input-border);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.15s ease;
+}
+
+.practice-btn:active {
+    background: var(--btn-bg);
+    color: var(--text-primary);
+    transform: scale(0.98);
 }
 
 .start-hint {
@@ -995,6 +1042,12 @@ button,
     .theme-toggle:hover {
         transform: scale(1.1);
         background: var(--btn-hover);
+    }
+
+    .practice-btn:hover {
+        background: var(--btn-bg);
+        color: var(--text-primary);
+        border-color: var(--text-secondary);
     }
 
     .time-btn:hover {

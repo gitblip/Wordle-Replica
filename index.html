@@ -11,6 +11,23 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script>
+        // Runs before first paint: picks the theme up front so a dark-mode user
+        // never sees a flash of the light palette. timer.js re-applies it later
+        // to sync the icon and theme-color.
+        (function () {
+            try {
+                var saved = localStorage.getItem("lexicon-theme");
+                var night = saved === "night" ||
+                    (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches);
+                if (night) {
+                    document.documentElement.classList.add("night-mode");
+                    document.querySelector('meta[name="theme-color"]')
+                        .setAttribute("content", "#0b0e2a");
+                }
+            } catch (e) { /* storage blocked — fall back to the day palette */ }
+        })();
+    </script>
 </head>
 
 <body>
@@ -26,14 +43,16 @@
             <h1 class="start-title">LEXICON LEAGUE</h1>
             <p class="start-subtitle">WORDLE</p>
             <div class="horizon-line"></div>
-            <h2 class="start-prompt">Choose your time limit</h2>
+            <h2 class="start-prompt">Choose your mode</h2>
             <div class="time-buttons">
                 <button id="onemin" class="time-btn" type="button">1 MIN</button>
                 <button id="threemin" class="time-btn" type="button">3 MIN</button>
             </div>
+            <button id="practice" class="practice-btn" type="button">PRACTICE &mdash; NO TIMER</button>
             <p class="start-hint">
                 Solve as many words as you can before time runs out.<br>
-                Running out of guesses just moves you to a new word.
+                Running out of guesses just moves you to a new word.<br>
+                Practice has no clock and is not ranked.
             </p>
         </div>
     </div>
@@ -52,13 +71,15 @@
                     <span class="title-sub">WORDLE</span>
                 </div>
                 <div id="w-timer" class="w-stat">
-                    <span class="stat-label">TIME</span>
+                    <span class="stat-label" id="timer-label">TIME</span>
                     <span class="stat-value" id="timer-value">0:00</span>
                 </div>
             </div>
 
             <div class="game-controls">
                 <button id="w-pause" class="ctrl-btn" type="button">⏸ PAUSE</button>
+                <!-- Practice mode has no clock, so it needs an explicit way out -->
+                <button id="end-practice" class="ctrl-btn" type="button" hidden>✕ END</button>
                 <button id="next-word" class="ctrl-btn" type="button" disabled>NEXT WORD ⏭</button>
             </div>
 
@@ -115,13 +136,13 @@
     <!-- ==================== GAME OVER SCREEN ==================== -->
     <div id="gameover-screen" class="screen">
         <div class="gameover-card">
-            <h2 class="gameover-title">TIME'S UP</h2>
+            <h2 id="gameover-title" class="gameover-title">TIME'S UP</h2>
             <p id="final-score" class="final-score"></p>
 
             <!-- Words played this game -->
             <div id="gameover-words" class="gameover-words"></div>
 
-            <div class="submit-section">
+            <div id="submit-section" class="submit-section">
                 <input id="player-name" class="name-input" placeholder="YOUR NAME" maxlength="20"
                        autocomplete="off" autocapitalize="characters" spellcheck="false"
                        aria-label="Your name">
@@ -164,6 +185,7 @@
 
 <script src="database.js"></script>
 <script src="words.js"></script>
+<script src="acceptable_words.js"></script>
 <script src="script.js"></script>
 <script src="timer.js"></script>
 <script src="leaderboard.js"></script>

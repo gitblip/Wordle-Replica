@@ -13,6 +13,7 @@ let remainingMs = 0;       // authoritative time left when the clock is stopped
 let deadline = 0;          // timestamp the game ends at, while running
 let timer = null;          // interval id (null = clock not running)
 let timerStarted = false;  // has the countdown begun for this game yet?
+let practiceMode = false;  // true = untimed, unranked, ends only when you say so
 let pause = false;
 
 let OneMin = document.getElementById("onemin");
@@ -28,6 +29,11 @@ let nextWordBtn = document.getElementById("next-word");
 let retry = document.getElementById("w-retry");
 let submitBtn = document.getElementById("submit");
 let nameInput = document.getElementById("player-name");
+let practiceBtn = document.getElementById("practice");
+let endBtn = document.getElementById("end-practice");
+let timerLabel = document.getElementById("timer-label");
+let gameoverTitle = document.getElementById("gameover-title");
+let submitSection = document.getElementById("submit-section");
 
 RenderTimer();
 
@@ -44,6 +50,7 @@ ThreeMin.addEventListener("click", function() {
 function startGameWithDuration(seconds) {
     StopTimer();
     timerStarted = false;
+    practiceMode = false;
 
     selectedtime = seconds;
     remainingMs = seconds * 1000;
@@ -53,6 +60,7 @@ function startGameWithDuration(seconds) {
     pauseOverlay.classList.remove("visible");
     pauseBtn.textContent = "⏸ PAUSE";
 
+    setModeChrome();
     NewBoard("reset");        // score 0, history cleared, fresh word, input enabled
     nextWordBtn.disabled = false;
 
@@ -61,9 +69,74 @@ function startGameWithDuration(seconds) {
     // The countdown itself starts on the first keypress (StartTimer in handleInput)
 }
 
+// ---------- Practice Mode: no clock, no ranking, no end until you say so ----------
+
+practiceBtn.addEventListener("click", function() {
+    StopTimer();
+    timerStarted = false;
+    practiceMode = true;
+
+    selectedtime = 0;
+    remainingMs = 0;
+
+    pause = false;
+    gamePaused = false;
+    pauseOverlay.classList.remove("visible");
+    pauseBtn.textContent = "⏸ PAUSE";
+
+    setModeChrome();
+    NewBoard("reset");
+    nextWordBtn.disabled = false;
+
+    RenderTimer();
+    showGameScreen();
+});
+
+// Swap the controls to suit the current mode: practice trades the (pointless)
+// pause button for an END button, since no clock will ever stop the game.
+function setModeChrome() {
+    pauseBtn.hidden = practiceMode;
+    endBtn.hidden = !practiceMode;
+    submitSection.hidden = false;
+    gameoverTitle.textContent = "TIME'S UP";
+}
+
+// Practice results: score shown, but never submitted — an untimed run would
+// make the timed leaderboard meaningless.
+function EndPractice() {
+    if (!practiceMode || gameOver) return;
+
+    gameOver = true;
+    gamePaused = false;
+    pause = false;
+    inputLocked = false;
+
+    StopTimer();
+    pauseOverlay.classList.remove("visible");
+    nextWordBtn.disabled = true;
+
+    gameoverTitle.textContent = "PRACTICE OVER";
+    document.getElementById("final-score").textContent = "Words Solved: " + score;
+    RenderGameOverWords();
+
+    // Belt and braces: hide the submit UI *and* disable it, so an untimed run
+    // can never reach the ranked leaderboard.
+    submitSection.hidden = true;
+    submitBtn.disabled = true;
+
+    showGameOverScreen();
+    DisplayLeaderboard();
+}
+
+endBtn.addEventListener("click", EndPractice);
+
 // ---------- Timer ----------
 
 function StartTimer() {
+    // Practice mode is untimed — there is nothing to start
+    if (practiceMode)
+        return;
+
     if (timer !== null || gameOver || remainingMs <= 0)
         return;
 
@@ -95,6 +168,15 @@ function Tick() {
 }
 
 function RenderTimer() {
+    if (practiceMode) {
+        // No countdown to show, so use the slot for the other half of the score
+        timerLabel.textContent = "MISSED";
+        timerValue.textContent = wordHistory.filter(function(e) { return !e.solved; }).length;
+        timerBox.classList.remove("low");
+        return;
+    }
+
+    timerLabel.textContent = "TIME";
     let seconds = Math.ceil(remainingMs / 1000);
     timerValue.textContent = formatTime(seconds);
     timerBox.classList.toggle("low", timerStarted && !gameOver && seconds <= 10);
@@ -178,7 +260,9 @@ retry.addEventListener("click", function() {
 
     selectedtime = 0;
     remainingMs = 0;
+    practiceMode = false;
     nextWordBtn.disabled = true;
+    setModeChrome();
 
     // Reset board, score and word history, then block input until a
     // duration is picked again
@@ -204,6 +288,8 @@ function GameOver() {
     RenderTimer();
 
     // Display final score and the words played
+    gameoverTitle.textContent = "TIME'S UP";
+    submitSection.hidden = false;
     document.getElementById("final-score").textContent = "Final Score: " + score;
     RenderGameOverWords();
 
@@ -259,15 +345,22 @@ nameInput.addEventListener("keydown", function(event) {
 let themeColorMeta = document.querySelector('meta[name="theme-color"]');
 
 function applyTheme(night) {
+    // The class goes on <html> so color-scheme and the html background switch
+    // with it; mirrored onto <body> so body-scoped selectors keep working.
+    document.documentElement.classList.toggle("night-mode", night);
     document.body.classList.toggle("night-mode", night);
     themeIcon.textContent = night ? "🌙" : "☀️";
     if (themeColorMeta) {
-        themeColorMeta.setAttribute("content", night ? "#0b0e2a" : "#7ec8e3");
+        // Read the real edge colour so the phone's top/bottom bars can never
+        // drift out of sync with the page background.
+        let edge = getComputedStyle(document.documentElement)
+            .getPropertyValue("--bg-edge").trim();
+        themeColorMeta.setAttribute("content", edge || (night ? "#0b0e2a" : "#7ec8e3"));
     }
 }
 
 theme.addEventListener("click", function() {
-    let night = !document.body.classList.contains("night-mode");
+    let night = !document.documentElement.classList.contains("night-mode");
     applyTheme(night);
     try {
         localStorage.setItem("lexicon-theme", night ? "night" : "day");
