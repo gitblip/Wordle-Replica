@@ -27,7 +27,7 @@ async function getScores() {
 
 async function submitScore(player, score) {
     const { data, error } = await supabaseClient
-        .from("scores_threemin")
+        .from("scores")
         .insert([
             {
                 player: player,

@@ -39,13 +39,21 @@ RenderTimer();
 
 // ---------- Time Selection → Start Game ----------
 
-OneMin.addEventListener("click", function() {
-    startGameWithDuration(5);
-});
+// Modes that aren't currently offered get commented out of index.html, which
+// makes getElementById return null. Attach guardedly: an unconditional
+// addEventListener on a missing button throws at load and silently kills every
+// listener registered further down this file (pause, retry, submit, theme).
+if (OneMin) {
+    OneMin.addEventListener("click", function() {
+        startGameWithDuration(15);
+    });
+}
 
-ThreeMin.addEventListener("click", function() {
-    startGameWithDuration(180);
-});
+if (ThreeMin) {
+    ThreeMin.addEventListener("click", function() {
+        startGameWithDuration(3 * 60);
+    });
+}
 
 function startGameWithDuration(seconds) {
     StopTimer();
@@ -71,7 +79,7 @@ function startGameWithDuration(seconds) {
 
 // ---------- Practice Mode: no clock, no ranking, no end until you say so ----------
 
-practiceBtn.addEventListener("click", function() {
+function startPractice() {
     StopTimer();
     timerStarted = false;
     practiceMode = true;
@@ -90,13 +98,17 @@ practiceBtn.addEventListener("click", function() {
 
     RenderTimer();
     showGameScreen();
-});
+}
+
+if (practiceBtn) {
+    practiceBtn.addEventListener("click", startPractice);
+}
 
 // Swap the controls to suit the current mode: practice trades the (pointless)
 // pause button for an END button, since no clock will ever stop the game.
 function setModeChrome() {
-    pauseBtn.hidden = practiceMode;
-    endBtn.hidden = !practiceMode;
+    if (pauseBtn) pauseBtn.hidden = practiceMode;
+    if (endBtn) endBtn.hidden = !practiceMode;
     submitSection.hidden = false;
     gameoverTitle.textContent = "TIME'S UP";
 }
@@ -128,7 +140,9 @@ function EndPractice() {
     DisplayLeaderboard();
 }
 
-endBtn.addEventListener("click", EndPractice);
+if (endBtn) {
+    endBtn.addEventListener("click", EndPractice);
+}
 
 // ---------- Timer ----------
 
@@ -306,6 +320,12 @@ function GameOver() {
 
 async function handleSubmit() {
     if (submitBtn.disabled) return;
+
+    // Nothing was solved, so there is no result worth ranking
+    if (score <= 0) {
+        showToast("You need a score greater than 0 to be considered");
+        return;
+    }
 
     let playerName = nameInput.value.trim();
     if (!playerName) {
