@@ -8,6 +8,7 @@ let validWords = [
     "MUGAN",
     "INIAN",
     "NIGGA",
+    "NITYA",
     "AARGH",
     "AARTI",
     "ABACA",

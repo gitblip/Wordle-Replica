@@ -40,7 +40,7 @@ RenderTimer();
 // ---------- Time Selection → Start Game ----------
 
 OneMin.addEventListener("click", function() {
-    startGameWithDuration(60);
+    startGameWithDuration(5);
 });
 
 ThreeMin.addEventListener("click", function() {
