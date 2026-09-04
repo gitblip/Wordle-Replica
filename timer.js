@@ -15,10 +15,13 @@ let timer = null;          // interval id (null = clock not running)
 let timerStarted = false;  // has the countdown begun for this game yet?
 let practiceMode = false;  // true = untimed, unranked, ends only when you say so
 let pause = false;
+let restartArmed = false;    // RESTART tapped once, waiting for confirmation
+let restartArmTimer = null;  // id of the timeout that un-arms it
 
 let OneMin = document.getElementById("onemin");
 let ThreeMin = document.getElementById("threemin");
 let pauseBtn = document.getElementById("w-pause");
+let restartBtn = document.getElementById("w-restart");
 let resumeBtn = document.getElementById("resume-btn");
 let pauseOverlay = document.getElementById("pause-overlay");
 let theme = document.getElementById("w-theme");
@@ -57,6 +60,7 @@ if (ThreeMin) {
 
 function startGameWithDuration(seconds) {
     StopTimer();
+    disarmRestart();
     timerStarted = false;
     practiceMode = false;
 
@@ -81,6 +85,7 @@ function startGameWithDuration(seconds) {
 
 function startPractice() {
     StopTimer();
+    disarmRestart();
     timerStarted = false;
     practiceMode = true;
 
@@ -239,6 +244,45 @@ function resumeGame() {
     if (timerStarted) StartTimer();
 }
 
+// ---------- Restart (start the current mode over from scratch) ----------
+
+// RESTART sits next to PAUSE and throws away a run in progress, so it asks
+// twice: the first tap arms it, the second actually restarts. The armed state
+// lapses on its own, so a much later stray tap can't wipe a good game.
+function disarmRestart() {
+    restartArmed = false;
+    if (restartArmTimer !== null) {
+        clearTimeout(restartArmTimer);
+        restartArmTimer = null;
+    }
+    if (restartBtn) restartBtn.textContent = "↻ RESTART";
+}
+
+if (restartBtn) {
+    restartBtn.addEventListener("click", function() {
+        if (gameOver) return;
+
+        if (!restartArmed) {
+            restartArmed = true;
+            restartBtn.textContent = "↻ SURE?";
+            showToast("Tap again to restart", 2400);
+            restartArmTimer = setTimeout(disarmRestart, 2500);
+            return;
+        }
+
+        disarmRestart();
+
+        // Same mode, clean slate: board, score, word history and clock all reset
+        if (practiceMode) {
+            startPractice();
+        } else {
+            startGameWithDuration(selectedtime);
+        }
+
+        showToast("Restarted", 1200);
+    });
+}
+
 // Auto-pause when the phone locks or the app is backgrounded, so a deadline
 // based timer doesn't quietly burn through the game while it's out of sight
 document.addEventListener("visibilitychange", function() {
@@ -256,7 +300,8 @@ nextWordBtn.addEventListener("click", function() {
     // otherwise you could reroll the first word for free
     StartTimer();
 
-    showToast("The word was " + ans, 1600);
+    // Deliberately does not name the word — an unsolved word is never revealed
+    showToast("Skipped", 1200);
     CommitWord(false);     // recorded as missed, no score change
     NewBoard("next");      // timer keeps running — only time ends the game
 });
@@ -265,6 +310,7 @@ nextWordBtn.addEventListener("click", function() {
 
 retry.addEventListener("click", function() {
     StopTimer();
+    disarmRestart();
     timerStarted = false;
 
     pause = false;

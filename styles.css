@@ -447,6 +447,7 @@ button,
 .ctrl-btn {
     flex: 1 1 0;
     min-width: 0;
+    white-space: nowrap;
     padding: 9px 10px;
     font-family: 'Inter', sans-serif;
     font-size: 0.75rem;
@@ -470,6 +471,16 @@ button,
 .ctrl-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+/* Three controls share this row now, and on a narrow phone the labels would
+   wrap mid-word, so tighten them up rather than let the row grow */
+@media (max-width: 400px) {
+    .ctrl-btn {
+        padding: 9px 5px;
+        font-size: 0.68rem;
+        letter-spacing: 0.3px;
+    }
 }
 
 /* ---------- Guessed Word List ---------- */

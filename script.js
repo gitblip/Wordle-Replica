@@ -105,9 +105,10 @@ function handleInput(key) {
                     scheduleNextWord(true, 700);
                 }
                 else if (CurrentRow == 6) {
-                    // Out of guesses. This does NOT end the game — reveal the
-                    // word and move on to a new one, score unchanged.
-                    showToast("The word was " + ans, 1600);
+                    // Out of guesses. This does NOT end the game — move on to a
+                    // new word, score unchanged. The answer stays hidden: only
+                    // a word the player actually solved is ever shown.
+                    showToast("Out of guesses", 1600);
                     scheduleNextWord(false, 1700);
                 }
             }
@@ -294,10 +295,12 @@ function RenderHistory() {
     }
 }
 
+// Solved words are named; skipped and failed ones are masked, so the answer
+// only ever appears for a word the player got on their own.
 function makeWordChip(entry) {
     let chip = document.createElement("span");
     chip.className = "chip " + (entry.solved ? "chip-solved" : "chip-missed");
-    chip.textContent = (entry.solved ? "✓ " : "✗ ") + entry.word;
+    chip.textContent = entry.solved ? "✓ " + entry.word : "✗ •••••";
     return chip;
 }
 
