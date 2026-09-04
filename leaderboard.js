@@ -5,22 +5,23 @@
 let leaderboardBody = document.getElementById("leaderboard-body");
 
 async function DisplayLeaderboard() {
-    // Clear previous entries
-    leaderboardBody.innerHTML = "";
+    showLeaderboardMessage("Loading...");
 
-    let scores = await getScores();
-
-    if (!scores || scores.length === 0) {
-        let row = document.createElement("tr");
-        let cell = document.createElement("td");
-        cell.colSpan = 3;
-        cell.textContent = "No scores yet";
-        cell.style.textAlign = "center";
-        cell.style.color = "var(--text-secondary)";
-        row.appendChild(cell);
-        leaderboardBody.appendChild(row);
+    let scores;
+    try {
+        scores = await getScores();
+    } catch (err) {
+        console.error("Leaderboard error:", err);
+        showLeaderboardMessage("Could not load leaderboard");
         return;
     }
+
+    if (!scores || scores.length === 0) {
+        showLeaderboardMessage("No scores yet");
+        return;
+    }
+
+    leaderboardBody.innerHTML = "";
 
     scores.forEach(function(entry, index) {
         let row = document.createElement("tr");
@@ -39,4 +40,18 @@ async function DisplayLeaderboard() {
         row.appendChild(scoreCell);
         leaderboardBody.appendChild(row);
     });
+}
+
+// Single full-width row used for loading / empty / error states
+function showLeaderboardMessage(message) {
+    leaderboardBody.innerHTML = "";
+
+    let row = document.createElement("tr");
+    let cell = document.createElement("td");
+    cell.colSpan = 3;
+    cell.textContent = message;
+    cell.className = "leaderboard-message";
+
+    row.appendChild(cell);
+    leaderboardBody.appendChild(row);
 }

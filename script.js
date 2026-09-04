@@ -1,15 +1,25 @@
 /* ===================================================
    script.js — Core Wordle Game Logic
+
+   Key rule: running out of guesses on a word does NOT end
+   the game. Only the timer hitting 0 ends the game.
    =================================================== */
 
-let gameOver = true;    // true = input blocked (start screen, game over)
-let gamePaused = false; // true = input blocked (paused)
+let gameOver = true;     // true = input blocked (start screen, game over)
+let gamePaused = false;  // true = input blocked (paused)
+let inputLocked = false; // true = input blocked briefly while switching words
+
+// roundId changes on every new word. Delayed callbacks capture the id they
+// were scheduled under so a stale timeout can never touch a newer board.
+let roundId = 0;
 
 let board = document.getElementById("w-board");
 let ans = RandomWord();
-console.log(ans);
 
 let score = 0;
+
+// Words already played this game: { word: "CRANE", solved: true }
+let wordHistory = [];
 
 //Create board
 function Createboard() {
@@ -36,6 +46,8 @@ let count = 0;
 
 // ---------- Physical Keyboard Input ----------
 document.addEventListener("keydown", function(event) {
+    // Don't hijack typing in the name field on the game over screen
+    if (event.target && event.target.tagName === "INPUT") return;
     handleInput(event.key);
 });
 
@@ -55,8 +67,9 @@ document.querySelectorAll(".key").forEach(function(btn) {
 
 // ---------- Unified Input Handler ----------
 function handleInput(key) {
-    // Block input when game hasn't started, is over, or is paused
-    if (gameOver || gamePaused)
+    // Block input when the game hasn't started, is over, is paused,
+    // or is mid-transition between words
+    if (gameOver || gamePaused || inputLocked)
         return;
 
     StartTimer();
@@ -75,14 +88,10 @@ function handleInput(key) {
             for (let i = 0; i < 5; i++) {
                 guess += tiles[CurrentRow * 5 + i].textContent;
             }
-            console.log(validWords.includes(guess), guess);
+
             if (validWords.includes(guess)) {
 
-                console.log("It is a valid word");
-                console.log("GUESS =", guess);
-                console.log("ANSWER =", ans);
                 let Check = checkGuess(guess, ans);
-                console.log(Check);
 
                 AssignColor(Check, CurrentTile);
 
@@ -92,18 +101,14 @@ function handleInput(key) {
                 KeyboardColour(Check);
 
                 if (Check.every(value => value === 2)) {
-                    // Correct guess — delay for flip animation, then increment score + new board
-                    setTimeout(function() {
-                        if (!gameOver) NewBoard(false);
-                    }, 600);
+                    // Solved — score it now, new word after the flip animation
+                    scheduleNextWord(true, 700);
                 }
                 else if (CurrentRow == 6) {
-                    // Out of guesses for this word — show the answer, new board (no score change)
-                    let missedWord = ans;
-                    showToast("The word was " + missedWord);
-                    setTimeout(function() {
-                        if (!gameOver) NewBoard("no-score");
-                    }, 1500);
+                    // Out of guesses. This does NOT end the game — reveal the
+                    // word and move on to a new one, score unchanged.
+                    showToast("The word was " + ans, 1600);
+                    scheduleNextWord(false, 1700);
                 }
             }
             else {
@@ -119,6 +124,29 @@ function handleInput(key) {
         setTimeout(function() { popTile.classList.remove("pop"); }, 100);
         CurrentTile++;
     }
+}
+
+// Record the word that was just played. Called at the moment the result is
+// known (not after the animation) so a word solved on the buzzer still counts
+// even if the timer expires while the tiles are still flipping.
+function CommitWord(solved) {
+    wordHistory.push({ word: ans, solved: solved });
+    if (solved) IncreaseScore();
+    RenderHistory();
+}
+
+// Lock input, then swap in a new word once the animations have played.
+// The roundId check makes sure a pending swap is dropped if the game ended
+// or already moved on (e.g. the player hit Retry during the delay).
+function scheduleNextWord(solved, delay) {
+    inputLocked = true;
+    CommitWord(solved);
+
+    let myRound = roundId;
+    setTimeout(function() {
+        if (roundId !== myRound || gameOver) return;
+        NewBoard("next");
+    }, delay);
 }
 
 function checkGuess(guess, ans) {
@@ -180,22 +208,30 @@ function RandomWord() {
 }
 
 //Score
-let scoreboard = document.querySelector(".w-score");
-scoreboard.textContent = "SCORE: " + score;
+let scoreValue = document.getElementById("score-value");
+scoreValue.textContent = score;
 
 function IncreaseScore() {
     score++;
-    scoreboard.textContent = "SCORE: " + score;
+    scoreValue.textContent = score;
 }
 
 //New Board:
-// resetScore=true  → full reset (retry, new game selection)
-// resetScore=false → correct guess or out-of-guesses → increment score, new word
-function NewBoard(resetScore) {
-    if (resetScore === undefined) resetScore = false;
+// mode = "reset" → brand new game: score and word history wiped
+// mode = "next"  → clear the board and pick a new word, score untouched
+//                  (scoring/history is handled by CommitWord)
+function NewBoard(mode) {
+    if (mode === "reset") {
+        wordHistory = [];
+        score = 0;
+        scoreValue.textContent = score;
+    }
+
+    roundId++;
 
     board.innerHTML = "";
     gameOver = false;
+    inputLocked = false;
 
     CurrentTile = 0;
     CurrentRow = 0;
@@ -204,27 +240,15 @@ function NewBoard(resetScore) {
 
     ans = RandomWord();
 
-    if (resetScore === true) {
-        // Full reset (retry, new game)
-        score = 0;
-        scoreboard.textContent = "SCORE: " + score;
-    } else if (resetScore === "no-score") {
-        // Out of guesses — no score change, just new word
-    } else {
-        // Correct guess — increment score
-        IncreaseScore();
-    }
-
     Createboard();
     tiles = document.querySelectorAll(".w-tile");
-
-    console.log(ans);
-    console.log(score);
 
     let keys = document.querySelectorAll(".key");
     keys.forEach(function(key) {
         key.classList.remove("k-used0", "k-used1", "k-used2");
     });
+
+    RenderHistory();
 }
 
 //change keyboard letters that have been pressed
@@ -256,6 +280,52 @@ function KeyboardColour(Check) {
     }
 }
 
+// ---------- Guessed Word List ----------
+
+let historyTrack = document.getElementById("history-track");
+
+// Compact strip of played words on the game screen (newest first)
+function RenderHistory() {
+    historyTrack.innerHTML = "";
+
+    for (let i = wordHistory.length - 1; i >= 0; i--) {
+        historyTrack.appendChild(makeWordChip(wordHistory[i]));
+    }
+}
+
+function makeWordChip(entry) {
+    let chip = document.createElement("span");
+    chip.className = "chip " + (entry.solved ? "chip-solved" : "chip-missed");
+    chip.textContent = (entry.solved ? "✓ " : "✗ ") + entry.word;
+    return chip;
+}
+
+// Full breakdown on the game over screen
+function RenderGameOverWords() {
+    let container = document.getElementById("gameover-words");
+    container.innerHTML = "";
+
+    if (wordHistory.length === 0) {
+        container.innerHTML = '<p class="words-empty">No words played.</p>';
+        return;
+    }
+
+    let solved = wordHistory.filter(function(e) { return e.solved; }).length;
+    let missed = wordHistory.length - solved;
+
+    let summary = document.createElement("p");
+    summary.className = "words-summary";
+    summary.textContent = "Solved " + solved + " · Missed " + missed;
+    container.appendChild(summary);
+
+    let list = document.createElement("div");
+    list.className = "words-list";
+    wordHistory.forEach(function(entry) {
+        list.appendChild(makeWordChip(entry));
+    });
+    container.appendChild(list);
+}
+
 // ---------- Screen Transitions ----------
 
 function showStartScreen() {
@@ -280,7 +350,9 @@ function showGameOverScreen() {
 
 // ---------- Toast Notification ----------
 
-function showToast(message) {
+function showToast(message, duration) {
+    if (duration === undefined) duration = 2000;
+
     // Remove existing toast
     let existing = document.querySelector(".toast");
     if (existing) existing.remove();
@@ -299,5 +371,5 @@ function showToast(message) {
     setTimeout(function() {
         toast.classList.remove("show");
         setTimeout(function() { toast.remove(); }, 300);
-    }, 2000);
+    }, duration);
 }

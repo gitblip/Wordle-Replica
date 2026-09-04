@@ -1,8 +1,7 @@
 /* ===================================================
    LEXICON LEAGUE — "Beyond the Horizon" Theme
+   Mobile-first: base styles target phones, then scale up.
    =================================================== */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
 
 /* ---------- CSS Custom Properties (Day Mode) ---------- */
 :root {
@@ -31,12 +30,14 @@
     --green: #38b764;
     --yellow: #e8b028;
     --gray: #7a8a9a;
+    --danger: #d63b2a;
     --overlay-bg: rgba(0, 0, 0, 0.4);
     --input-bg: rgba(255, 255, 255, 0.8);
     --input-border: rgba(100, 120, 140, 0.3);
     --table-header-bg: rgba(0, 0, 0, 0.05);
     --table-row-hover: rgba(0, 0, 0, 0.03);
     --horizon-line: rgba(232, 131, 74, 0.4);
+    --sun-glow: radial-gradient(circle, rgba(255, 244, 214, 0.9) 0%, rgba(255, 220, 160, 0.35) 45%, rgba(255, 220, 160, 0) 72%);
 }
 
 /* ---------- Night Mode Overrides ---------- */
@@ -66,12 +67,57 @@ body.night-mode {
     --green: #4ade80;
     --yellow: #facc15;
     --gray: #64748b;
+    --danger: #fb7185;
     --overlay-bg: rgba(0, 0, 0, 0.6);
     --input-bg: rgba(30, 30, 60, 0.8);
     --input-border: rgba(100, 100, 180, 0.3);
     --table-header-bg: rgba(255, 255, 255, 0.05);
     --table-row-hover: rgba(255, 255, 255, 0.03);
     --horizon-line: rgba(192, 132, 252, 0.3);
+    --sun-glow: radial-gradient(circle, rgba(226, 232, 255, 0.55) 0%, rgba(180, 190, 255, 0.2) 45%, rgba(180, 190, 255, 0) 72%);
+}
+
+/* ---------- Global Reset & Base ---------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-horizon);
+    background-attachment: fixed;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    color: var(--text-primary);
+    transition: background 0.6s ease, color 0.4s ease;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain; /* no pull-to-refresh mid-game */
+    position: relative;
+}
+
+/* ---------- Atmosphere: distant glow at the horizon ---------- */
+body::after {
+    content: '';
+    position: fixed;
+    z-index: 0;
+    pointer-events: none;
+    left: 50%;
+    bottom: 20%;
+    width: 60vw;
+    height: 60vw;
+    max-width: 320px;
+    max-height: 320px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: var(--sun-glow);
+    transition: background 0.6s ease;
 }
 
 /* ---------- Stars for Night Mode ---------- */
@@ -99,51 +145,40 @@ body.night-mode::before {
         radial-gradient(1px 1px at 20% 55%, rgba(255,255,255,0.3), transparent);
 }
 
-/* ---------- Global Reset & Base ---------- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg-horizon);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-primary);
-    transition: background 0.6s ease, color 0.4s ease;
-    overflow-x: hidden;
-    position: relative;
+/* Shared touch behaviour for every tappable control */
+button,
+.w-tile,
+.chip {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 /* ---------- Theme Toggle ---------- */
 .theme-toggle {
     position: fixed;
-    top: 16px;
-    right: 16px;
+    top: calc(8px + env(safe-area-inset-top));
+    right: 8px;
     z-index: 1000;
-    width: 44px;
-    height: 44px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     border: 2px solid var(--card-border);
     background: var(--card-bg);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
-    transition: all 0.3s ease;
+    font-size: 17px;
+    transition: transform 0.25s ease, background 0.3s ease;
     box-shadow: var(--card-shadow);
 }
 
-.theme-toggle:hover {
-    transform: scale(1.1);
-    background: var(--btn-hover);
+.theme-toggle:active {
+    transform: scale(0.92);
 }
 
 .theme-icon {
@@ -157,7 +192,9 @@ body {
     max-width: 560px;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
+    /* auto margins centre the screen without clipping when it overflows */
+    margin: auto;
+    padding: calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
     position: relative;
     z-index: 1;
 }
@@ -175,7 +212,7 @@ body {
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--card-border);
     border-radius: 20px;
-    padding: 40px 36px;
+    padding: 28px 20px;
     box-shadow: var(--card-shadow);
     text-align: center;
     width: 100%;
@@ -185,15 +222,16 @@ body {
 
 /* ---------- START SCREEN ---------- */
 .start-title {
-    font-size: 2.6rem;
+    font-size: clamp(1.6rem, 8vw, 2.6rem);
     font-weight: 900;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
+    line-height: 1.1;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .start-subtitle {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 600;
     letter-spacing: 6px;
     color: var(--text-secondary);
@@ -204,26 +242,28 @@ body {
 .horizon-line {
     width: 80%;
     height: 2px;
-    margin: 0 auto 24px auto;
+    margin: 0 auto 22px auto;
     background: linear-gradient(90deg, transparent, var(--horizon-line), transparent);
 }
 
 .start-prompt {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--text-secondary);
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     letter-spacing: 1px;
 }
 
 .time-buttons {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     justify-content: center;
 }
 
 .time-btn {
-    padding: 14px 32px;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 16px 12px;
     font-family: 'Inter', sans-serif;
     font-size: 1rem;
     font-weight: 700;
@@ -233,20 +273,38 @@ body {
     background: var(--btn-bg);
     color: var(--accent);
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.15s ease;
 }
 
-.time-btn:hover {
+.time-btn:active {
     background: var(--accent);
     color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: scale(0.97);
+}
+
+.start-hint {
+    margin-top: 20px;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
 }
 
 /* ---------- GAME SCREEN ---------- */
 #game-screen {
-    gap: 16px;
-    padding-top: 60px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    gap: 8px;
+    justify-content: space-between;
+    padding: calc(8px + env(safe-area-inset-top)) 8px calc(8px + env(safe-area-inset-bottom));
+}
+
+.w-top {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    /* keeps the header clear of the fixed theme toggle */
+    padding-right: 44px;
 }
 
 .w-header {
@@ -256,36 +314,64 @@ body {
     align-items: stretch;
 }
 
-.w-score,
-.w-timer {
+.w-stat {
     flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 10px 8px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 1px;
+    padding: 6px 8px;
     background: var(--header-bg);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--header-border);
     border-radius: 10px;
     color: var(--text-primary);
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease, background 0.3s ease;
 }
 
+.stat-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Final 10 seconds */
+.w-stat.low {
+    border-color: var(--danger);
+}
+
+.w-stat.low .stat-value {
+    color: var(--danger);
+    animation: lowPulse 1s ease-in-out infinite;
+}
+
+@keyframes lowPulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.45; }
+}
+
+/* Title block is desktop-only — vertical space is precious on a phone */
 .w-title {
+    display: none;
     flex: 2;
-    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 8px 12px;
     background: var(--header-bg);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--header-border);
     border-radius: 10px;
-    transition: all 0.3s ease;
 }
 
 .title-main {
@@ -304,14 +390,17 @@ body {
 
 .game-controls {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     justify-content: center;
+    width: 100%;
 }
 
 .ctrl-btn {
-    padding: 8px 18px;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 9px 10px;
     font-family: 'Inter', sans-serif;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 1px;
     border: 1px solid var(--header-border);
@@ -319,13 +408,14 @@ body {
     background: var(--btn-bg);
     color: var(--btn-text);
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: background 0.25s ease, transform 0.15s ease;
     backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
-.ctrl-btn:hover:not(:disabled) {
+.ctrl-btn:active:not(:disabled) {
+    transform: scale(0.97);
     background: var(--btn-hover);
-    transform: translateY(-1px);
 }
 
 .ctrl-btn:disabled {
@@ -333,27 +423,95 @@ body {
     cursor: not-allowed;
 }
 
+/* ---------- Guessed Word List ---------- */
+/* min-height reserves the strip up front so the board doesn't jump down
+   the moment the first word is played */
+.w-history {
+    width: 100%;
+    min-height: 25px;
+}
+
+.history-track {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+}
+
+.history-track::-webkit-scrollbar {
+    display: none;
+}
+
+.chip {
+    flex: 0 0 auto;
+    padding: 4px 9px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-radius: 999px;
+    border: 1px solid var(--header-border);
+    background: var(--header-bg);
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.chip-solved {
+    border-color: var(--green);
+    color: var(--green);
+}
+
+.chip-missed {
+    border-color: var(--gray);
+    color: var(--text-secondary);
+}
+
 /* ---------- Board ---------- */
 #w-board {
+    --gap: 5px;
+    --edge: 8px;
+    /* Space taken by header, controls, history strip and keyboard.
+       The tile then takes whatever is left, capped so it never gets silly. */
+    --chrome: 350px;
+    --tile: max(26px, min(
+        calc((100vw - 2 * var(--edge) - 4 * var(--gap)) / 5),
+        calc((100vh - var(--chrome)) / 6),
+        62px
+    ));
+
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--gap);
     align-items: center;
+}
+
+/* dvh tracks the *visible* viewport, so the board doesn't sit under mobile
+   browser chrome. Guarded because an unsupported unit inside min() would
+   invalidate the whole tile size. */
+@supports (height: 100dvh) {
+    #w-board {
+        --tile: max(26px, min(
+            calc((100vw - 2 * var(--edge) - 4 * var(--gap)) / 5),
+            calc((100dvh - var(--chrome)) / 6),
+            62px
+        ));
+    }
 }
 
 .w-row {
     display: flex;
-    gap: 6px;
+    gap: var(--gap);
 }
 
 .w-tile {
-    width: 58px;
-    height: 58px;
+    width: var(--tile);
+    height: var(--tile);
     border: 2px solid var(--tile-border);
     border-radius: 8px;
     background: var(--tile-bg);
     color: var(--tile-text);
-    font-size: 1.6rem;
+    font-size: calc(var(--tile) * 0.46);
     font-weight: 700;
     display: flex;
     justify-content: center;
@@ -401,6 +559,7 @@ body {
     position: fixed;
     inset: 0;
     z-index: 500;
+    padding: 16px;
     background: var(--overlay-bg);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -417,7 +576,7 @@ body {
 }
 
 .pause-card h2 {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 900;
     letter-spacing: 4px;
     margin-bottom: 8px;
@@ -425,16 +584,17 @@ body {
 
 .pause-card p {
     color: var(--text-secondary);
-    margin-bottom: 24px;
-    font-size: 0.95rem;
+    margin-bottom: 22px;
+    font-size: 0.9rem;
 }
 
 /* ---------- Keyboard ---------- */
 .w-keyboard {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     width: 100%;
+    max-width: 500px;
 }
 
 .w-keyboard-row {
@@ -443,30 +603,37 @@ body {
     justify-content: center;
 }
 
+/* Half-key inset on the middle row, like the real thing */
+.w-keyboard-row-mid {
+    padding: 0 5%;
+}
+
 .key {
-    min-width: 36px;
-    height: 50px;
-    padding: 0 6px;
+    flex: 1 1 0;
+    min-width: 0;
+    height: clamp(42px, 6.4vh, 54px);
+    padding: 0 2px;
     font-family: 'Inter', sans-serif;
-    font-size: 0.85rem;
+    font-size: clamp(0.72rem, 3.6vw, 0.95rem);
     font-weight: 700;
     border: 1px solid var(--key-border);
     border-radius: 6px;
     background: var(--key-bg);
     color: var(--key-text);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background 0.2s ease, transform 0.1s ease;
     backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 
-.key:hover {
+.key:active {
     background: var(--key-hover);
-    transform: translateY(-1px);
+    transform: scale(0.94);
 }
 
 .key-wide {
-    min-width: 56px;
-    font-size: 0.7rem;
+    flex: 1.6 1 0;
+    font-size: clamp(0.55rem, 2.5vw, 0.72rem);
 }
 
 /* Keyboard color states */
@@ -494,33 +661,66 @@ body {
 }
 
 .gameover-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 900;
     letter-spacing: 3px;
     margin-bottom: 8px;
 }
 
 .final-score {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--accent);
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
+.gameover-words {
+    margin-bottom: 18px;
+}
+
+.words-summary {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.words-empty {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.words-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    max-height: 96px;
+    overflow-y: auto;
+}
+
+/* Stacked on phones so the placeholder isn't truncated; side by side once
+   there's room (see the min-width block below) */
 .submit-section {
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    gap: 8px;
     margin-bottom: 14px;
-    flex-wrap: wrap;
     justify-content: center;
 }
 
 .name-input {
-    flex: 1;
-    min-width: 160px;
-    padding: 10px 14px;
+    /* flex:none while the section is a column — otherwise flex-basis would
+       stretch the field vertically instead of horizontally */
+    flex: none;
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+    padding: 12px 14px;
     font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
+    /* 16px keeps iOS from zooming in when the field is focused */
+    font-size: 16px;
     font-weight: 600;
     letter-spacing: 1px;
     border: 1px solid var(--input-border);
@@ -530,11 +730,14 @@ body {
     outline: none;
     transition: border-color 0.2s ease;
     backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 
 .name-input::placeholder {
     color: var(--text-secondary);
     opacity: 0.7;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
 }
 
 .name-input:focus {
@@ -542,7 +745,9 @@ body {
 }
 
 .submit-btn {
-    padding: 10px 20px;
+    flex: 0 0 auto;
+    width: 100%;
+    padding: 12px 18px;
     font-family: 'Inter', sans-serif;
     font-size: 0.85rem;
     font-weight: 700;
@@ -552,23 +757,23 @@ body {
     background: var(--accent);
     color: #fff;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: background 0.25s ease, transform 0.15s ease;
 }
 
-.submit-btn:hover {
+.submit-btn:active:not(:disabled) {
     background: var(--accent-hover);
-    border-color: var(--accent-hover);
-    transform: translateY(-1px);
+    transform: scale(0.97);
 }
 
 .submit-btn:disabled {
-    opacity: 0.5;
+    opacity: 0.55;
     cursor: not-allowed;
     transform: none;
 }
 
 .retry-btn {
-    padding: 12px 32px;
+    width: 100%;
+    padding: 14px 24px;
     font-family: 'Inter', sans-serif;
     font-size: 0.95rem;
     font-weight: 700;
@@ -578,13 +783,13 @@ body {
     background: transparent;
     color: var(--text-primary);
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: background 0.25s ease, transform 0.15s ease;
     margin-bottom: 20px;
 }
 
-.retry-btn:hover {
+.retry-btn:active {
     background: var(--btn-bg);
-    transform: translateY(-2px);
+    transform: scale(0.98);
 }
 
 /* ---------- Leaderboard ---------- */
@@ -594,11 +799,16 @@ body {
 }
 
 .leaderboard-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     letter-spacing: 2px;
     margin-bottom: 12px;
     color: var(--text-primary);
+}
+
+.table-wrap {
+    width: 100%;
+    overflow-x: auto;
 }
 
 #leaderboard-table {
@@ -608,24 +818,27 @@ body {
 }
 
 #leaderboard-table th {
-    padding: 8px 12px;
+    padding: 8px 10px;
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-secondary);
     background: var(--table-header-bg);
     border-bottom: 1px solid var(--tile-border);
 }
 
 #leaderboard-table td {
-    padding: 8px 12px;
+    padding: 8px 10px;
     color: var(--text-primary);
     border-bottom: 1px solid var(--tile-border);
 }
 
-#leaderboard-table tr:hover td {
-    background: var(--table-row-hover);
+/* rank centred, player left, score right */
+#leaderboard-table td:first-child,
+#leaderboard-table th:first-child {
+    width: 2.5rem;
+    text-align: center;
 }
 
 #leaderboard-table td:first-child {
@@ -633,19 +846,44 @@ body {
     color: var(--accent);
 }
 
+#leaderboard-table td:nth-child(2),
+#leaderboard-table th:nth-child(2) {
+    text-align: left;
+}
+
+#leaderboard-table td:last-child,
+#leaderboard-table th:last-child {
+    width: 4rem;
+    text-align: right;
+}
+
+#leaderboard-table td:last-child {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+#leaderboard-table td.leaderboard-message {
+    text-align: center;
+    color: var(--text-secondary);
+    font-weight: 400;
+    width: auto;
+}
+
 /* ---------- Toast Notification ---------- */
 .toast {
     position: fixed;
-    top: 70px;
+    top: calc(60px + env(safe-area-inset-top));
     left: 50%;
     transform: translateX(-50%) translateY(-20px);
-    padding: 10px 24px;
+    max-width: calc(100vw - 32px);
+    padding: 10px 20px;
     font-family: 'Inter', sans-serif;
     font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 1px;
+    text-align: center;
     color: #fff;
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.78);
     border-radius: 8px;
     z-index: 2000;
     opacity: 0;
@@ -658,33 +896,238 @@ body {
     transform: translateX(-50%) translateY(0);
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 480px) {
+/* ===================================================
+   Larger screens
+   =================================================== */
+
+/* Tablets and up */
+@media (min-width: 600px) {
+    .theme-toggle {
+        top: calc(16px + env(safe-area-inset-top));
+        right: 16px;
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+    }
+
     .screen {
-        padding: 12px;
+        padding: 20px;
     }
 
-    .start-card, .gameover-card {
-        padding: 28px 20px;
+    #game-screen {
+        gap: 14px;
+        justify-content: center;
+        padding: 60px 20px 20px;
     }
 
-    .start-title {
-        font-size: 1.8rem;
+    /* On desktop there's room for the title, and the toggle sits clear of it */
+    .w-top {
+        padding-right: 0;
+        gap: 12px;
     }
 
-    .w-tile {
-        width: 48px;
-        height: 48px;
+    .w-title {
+        display: flex;
+    }
+
+    .start-card,
+    .gameover-card,
+    .pause-card {
+        padding: 40px 36px;
+    }
+
+    .start-subtitle {
+        font-size: 1rem;
+    }
+
+    .time-btn {
+        flex: 0 1 auto;
+        padding: 14px 32px;
+    }
+
+    .ctrl-btn {
+        flex: 0 1 auto;
+        padding: 8px 18px;
+        font-size: 0.8rem;
+    }
+
+    .gameover-title {
+        font-size: 2rem;
+    }
+
+    .final-score {
         font-size: 1.3rem;
     }
 
-    .key {
-        min-width: 28px;
-        height: 44px;
-        font-size: 0.75rem;
+    .retry-btn {
+        width: auto;
+        padding: 12px 32px;
     }
 
-    .key-wide {
-        min-width: 44px;
+    .submit-section {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .name-input {
+        flex: 1 1 150px;
+        width: auto;
+        text-align: left;
+    }
+
+    .submit-btn {
+        width: auto;
+    }
+
+    #w-board {
+        --edge: 20px;
+        --chrome: 420px;
+    }
+
+    .words-list {
+        max-height: 120px;
+    }
+}
+
+/* Hover effects only where a real pointer exists — otherwise they stick
+   after a tap on touchscreens */
+@media (hover: hover) and (pointer: fine) {
+    .theme-toggle:hover {
+        transform: scale(1.1);
+        background: var(--btn-hover);
+    }
+
+    .time-btn:hover {
+        background: var(--accent);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .ctrl-btn:hover:not(:disabled) {
+        background: var(--btn-hover);
+        transform: translateY(-1px);
+    }
+
+    .key:hover {
+        background: var(--key-hover);
+        transform: translateY(-1px);
+    }
+
+    .submit-btn:hover:not(:disabled) {
+        background: var(--accent-hover);
+        border-color: var(--accent-hover);
+        transform: translateY(-1px);
+    }
+
+    .retry-btn:hover {
+        background: var(--btn-bg);
+        transform: translateY(-2px);
+    }
+
+    #leaderboard-table tr:hover td {
+        background: var(--table-row-hover);
+    }
+}
+
+/* Short viewports — landscape phones and very small screens. Placed after the
+   min-width rules so it also reins those in on wide-but-short screens. Drops
+   the non-essentials and tightens everything so board + keyboard still fit
+   without scrolling. */
+@media (max-height: 520px) {
+    #game-screen {
+        gap: 6px;
+        justify-content: space-between;
+        padding: calc(6px + env(safe-area-inset-top)) 8px calc(6px + env(safe-area-inset-bottom));
+    }
+
+    /* The title block and the played-words strip are the first things to go */
+    .w-title,
+    .w-history,
+    body::after {
+        display: none;
+    }
+
+    .w-top {
+        gap: 6px;
+        padding-right: 44px;
+    }
+
+    .w-stat {
+        padding: 3px 8px;
+    }
+
+    .stat-label {
+        font-size: 0.55rem;
+        letter-spacing: 1px;
+    }
+
+    .stat-value {
+        font-size: 1rem;
+    }
+
+    .ctrl-btn {
+        flex: 1 1 0;
+        padding: 6px 10px;
+        font-size: 0.7rem;
+    }
+
+    .key {
+        height: clamp(30px, 8.5vh, 42px);
+    }
+
+    #w-board {
+        --gap: 4px;
+        --edge: 8px;
+        --chrome: 265px;
+    }
+
+    /* Keep the start / game over cards inside a short viewport too */
+    .start-card,
+    .gameover-card,
+    .pause-card {
+        padding: 18px 20px;
+    }
+
+    .start-title {
+        font-size: clamp(1.3rem, 5vw, 1.8rem);
+    }
+
+    .start-subtitle {
+        letter-spacing: 4px;
+        margin-bottom: 10px;
+    }
+
+    .horizon-line {
+        margin-bottom: 12px;
+    }
+
+    .start-prompt {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+
+    .start-hint {
+        display: none;
+    }
+
+    .pause-card h2 {
+        font-size: 1.4rem;
+        margin-bottom: 4px;
+    }
+
+    .pause-card p {
+        margin-bottom: 14px;
+    }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }

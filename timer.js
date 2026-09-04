@@ -1,10 +1,18 @@
 /* ===================================================
    timer.js — Timer, Pause, Game Over, Retry, Theme
+
+   The timer is deadline based rather than a plain counter:
+   we store the moment the game should end and compare against
+   Date.now() on every tick. Phone browsers throttle or freeze
+   background timers, so a "remtime--" counter drifts badly —
+   this keeps the countdown honest.
    =================================================== */
 
-let selectedtime = 0;
-let remtime = 0;
-let timer = null;
+let selectedtime = 0;      // chosen duration in seconds
+let remainingMs = 0;       // authoritative time left when the clock is stopped
+let deadline = 0;          // timestamp the game ends at, while running
+let timer = null;          // interval id (null = clock not running)
+let timerStarted = false;  // has the countdown begun for this game yet?
 let pause = false;
 
 let OneMin = document.getElementById("onemin");
@@ -14,64 +22,82 @@ let resumeBtn = document.getElementById("resume-btn");
 let pauseOverlay = document.getElementById("pause-overlay");
 let theme = document.getElementById("w-theme");
 let themeIcon = theme.querySelector(".theme-icon");
-let time = document.querySelector(".w-timer");
-let restart = document.getElementById("restart");
+let timerBox = document.getElementById("w-timer");
+let timerValue = document.getElementById("timer-value");
+let nextWordBtn = document.getElementById("next-word");
 let retry = document.getElementById("w-retry");
 let submitBtn = document.getElementById("submit");
+let nameInput = document.getElementById("player-name");
 
-restart.disabled = true;
-
-time.textContent = "TIMER: " + selectedtime;
+RenderTimer();
 
 // ---------- Time Selection → Start Game ----------
 
 OneMin.addEventListener("click", function() {
-    console.log("1 min selected");
-    selectedtime = 60;
-    remtime = 60;
-    startGameWithDuration();
+    startGameWithDuration(60);
 });
 
 ThreeMin.addEventListener("click", function() {
-    console.log("3 min selected");
-    selectedtime = 180;
-    remtime = 180;
-    startGameWithDuration();
+    startGameWithDuration(180);
 });
 
-function startGameWithDuration() {
-    clearInterval(timer);
-    timer = null;
+function startGameWithDuration(seconds) {
+    StopTimer();
+    timerStarted = false;
+
+    selectedtime = seconds;
+    remainingMs = seconds * 1000;
+
     pause = false;
     gamePaused = false;
     pauseOverlay.classList.remove("visible");
     pauseBtn.textContent = "⏸ PAUSE";
 
-    time.textContent = "TIMER: " + formatTime(remtime);
-    NewBoard(true);
-    restart.disabled = false;
+    NewBoard("reset");        // score 0, history cleared, fresh word, input enabled
+    nextWordBtn.disabled = false;
 
+    RenderTimer();
     showGameScreen();
-    // Timer starts on first keypress (StartTimer is called in handleInput)
+    // The countdown itself starts on the first keypress (StartTimer in handleInput)
 }
 
 // ---------- Timer ----------
 
 function StartTimer() {
-    if (timer !== null)
+    if (timer !== null || gameOver || remainingMs <= 0)
         return;
 
-    timer = setInterval(function() {
-        remtime--;
-        time.textContent = "TIMER: " + formatTime(remtime);
+    timerStarted = true;
+    deadline = Date.now() + remainingMs;
+    timer = setInterval(Tick, 200);
+    RenderTimer();
+}
 
-        if (remtime <= 0) {
-            clearInterval(timer);
-            timer = null;
-            GameOver();
-            console.log("GAME OVER");
-        }
-    }, 1000);
+// Stop the clock and bank however much time is left
+function StopTimer() {
+    if (timer === null)
+        return;
+
+    remainingMs = Math.max(0, deadline - Date.now());
+    clearInterval(timer);
+    timer = null;
+}
+
+function Tick() {
+    remainingMs = Math.max(0, deadline - Date.now());
+    RenderTimer();
+
+    if (remainingMs <= 0) {
+        clearInterval(timer);
+        timer = null;
+        GameOver();
+    }
+}
+
+function RenderTimer() {
+    let seconds = Math.ceil(remainingMs / 1000);
+    timerValue.textContent = formatTime(seconds);
+    timerBox.classList.toggle("low", timerStarted && !gameOver && seconds <= 10);
 }
 
 function formatTime(seconds) {
@@ -85,17 +111,9 @@ function formatTime(seconds) {
 pauseBtn.addEventListener("click", function() {
     if (gameOver) return;
 
-    if (pause == false) {
-        // Pause the game
-        clearInterval(timer);
-        timer = null;
-        pause = true;
-        gamePaused = true;
-        pauseOverlay.classList.add("visible");
-        pauseBtn.textContent = "▶ RESUME";
-        console.log("PAUSED");
-    }
-    else {
+    if (pause === false) {
+        pauseGame();
+    } else {
         resumeGame();
     }
 });
@@ -104,82 +122,109 @@ resumeBtn.addEventListener("click", function() {
     resumeGame();
 });
 
-function resumeGame() {
-    pause = false;
-    gamePaused = false;
-    pauseOverlay.classList.remove("visible");
-    pauseBtn.textContent = "⏸ PAUSE";
-    StartTimer();
-    console.log("RESUMED");
+function pauseGame() {
+    StopTimer();
+    pause = true;
+    gamePaused = true;
+    pauseOverlay.classList.add("visible");
+    pauseBtn.textContent = "▶ RESUME";
 }
 
-// ---------- Restart (within same duration) ----------
+function resumeGame() {
+    if (gameOver) return;
 
-restart.addEventListener("click", function() {
-    clearInterval(timer);
-    timer = null;
     pause = false;
     gamePaused = false;
     pauseOverlay.classList.remove("visible");
     pauseBtn.textContent = "⏸ PAUSE";
-    remtime = selectedtime;
-    time.textContent = "TIMER: " + formatTime(remtime);
-    NewBoard(true);
+
+    // Only restart the clock if it was already running — pausing before the
+    // first keypress must not start the countdown early
+    if (timerStarted) StartTimer();
+}
+
+// Auto-pause when the phone locks or the app is backgrounded, so a deadline
+// based timer doesn't quietly burn through the game while it's out of sight
+document.addEventListener("visibilitychange", function() {
+    if (document.hidden && !gameOver && !gamePaused && timer !== null) {
+        pauseGame();
+    }
+});
+
+// ---------- Next Word (skip the current word) ----------
+
+nextWordBtn.addEventListener("click", function() {
+    if (gameOver || gamePaused || inputLocked) return;
+
+    // Skipping is a move, so it starts the clock like any other input —
+    // otherwise you could reroll the first word for free
+    StartTimer();
+
+    showToast("The word was " + ans, 1600);
+    CommitWord(false);     // recorded as missed, no score change
+    NewBoard("next");      // timer keeps running — only time ends the game
 });
 
 // ---------- Retry → Back to Start Screen ----------
 
 retry.addEventListener("click", function() {
-    clearInterval(timer);
-    timer = null;
+    StopTimer();
+    timerStarted = false;
+
     pause = false;
     gamePaused = false;
     pauseOverlay.classList.remove("visible");
     pauseBtn.textContent = "⏸ PAUSE";
+
     selectedtime = 0;
-    remtime = 0;
-    time.textContent = "TIMER: 0";
-    restart.disabled = true;
+    remainingMs = 0;
+    nextWordBtn.disabled = true;
 
-    // Reset score display
-    score = 0;
-    scoreboard.textContent = "SCORE: " + score;
-
+    // Reset board, score and word history, then block input until a
+    // duration is picked again
+    NewBoard("reset");
     showStartScreen();
+
+    RenderTimer();
 });
 
-// ---------- Game Over ----------
+// ---------- Game Over (timer reached 0 — the only way a game ends) ----------
 
 function GameOver() {
     gameOver = true;
     gamePaused = false;
     pause = false;
+    inputLocked = false;
+
     clearInterval(timer);
     timer = null;
+    remainingMs = 0;
     pauseOverlay.classList.remove("visible");
+    nextWordBtn.disabled = true;
+    RenderTimer();
 
-    // Display final score
-    let finalScoreEl = document.getElementById("final-score");
-    finalScoreEl.textContent = "Final Score: " + score;
+    // Display final score and the words played
+    document.getElementById("final-score").textContent = "Final Score: " + score;
+    RenderGameOverWords();
 
-    // Clear player name input
-    document.getElementById("player-name").value = "";
-
-    // Re-enable submit button
+    // Clear player name input and re-enable submitting
+    nameInput.value = "";
     submitBtn.disabled = false;
     submitBtn.textContent = "SUBMIT SCORE";
 
-    // Show game over screen and load leaderboard
     showGameOverScreen();
     DisplayLeaderboard();
 }
 
 // ---------- Submit Score ----------
 
-submitBtn.addEventListener("click", async function() {
-    let playerName = document.getElementById("player-name").value.trim();
+async function handleSubmit() {
+    if (submitBtn.disabled) return;
+
+    let playerName = nameInput.value.trim();
     if (!playerName) {
         showToast("Please enter your name");
+        nameInput.focus();
         return;
     }
 
@@ -190,26 +235,62 @@ submitBtn.addEventListener("click", async function() {
         await submitScore(playerName, score);
         submitBtn.textContent = "✓ SUBMITTED";
         showToast("Score submitted!");
-        // Refresh leaderboard
         DisplayLeaderboard();
     } catch (err) {
         console.error("Submit error:", err);
         submitBtn.disabled = false;
         submitBtn.textContent = "SUBMIT SCORE";
-        showToast("Error submitting score");
+        showToast("Could not submit score");
+    }
+}
+
+submitBtn.addEventListener("click", handleSubmit);
+
+// Enter in the name field submits
+nameInput.addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        handleSubmit();
     }
 });
 
 // ---------- Day/Night Theme Toggle ----------
 
+let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
+function applyTheme(night) {
+    document.body.classList.toggle("night-mode", night);
+    themeIcon.textContent = night ? "🌙" : "☀️";
+    if (themeColorMeta) {
+        themeColorMeta.setAttribute("content", night ? "#0b0e2a" : "#7ec8e3");
+    }
+}
+
 theme.addEventListener("click", function() {
-    document.body.classList.toggle("night-mode");
-    if (document.body.classList.contains("night-mode")) {
-        themeIcon.textContent = "🌙";
-    } else {
-        themeIcon.textContent = "☀️";
+    let night = !document.body.classList.contains("night-mode");
+    applyTheme(night);
+    try {
+        localStorage.setItem("lexicon-theme", night ? "night" : "day");
+    } catch (err) {
+        // Private browsing / storage disabled — theme just won't persist
     }
 });
+
+// Restore the theme: saved choice first, otherwise follow the device setting
+(function initTheme() {
+    let saved = null;
+    try {
+        saved = localStorage.getItem("lexicon-theme");
+    } catch (err) {
+        saved = null;
+    }
+
+    if (saved === "night" || saved === "day") {
+        applyTheme(saved === "night");
+    } else {
+        applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches);
+    }
+})();
 
 // ---------- Prevent button focus stealing from keyboard ----------
 

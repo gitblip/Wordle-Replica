@@ -1,4 +1,8 @@
-console.log("THIS IS THE STATIC SCRIPT");
+/* ===================================================
+   database.js — Supabase connection for the `scores` table
+   Columns: id, player, score, created_at (db default)
+   =================================================== */
+
 const SUPABASE_URL = "https://zkdogembgyxuyubeefbd.supabase.co"
 const SUPABASE_KEY = "sb_publishable_CC418qRSwN8lxYI-DocPuQ_W0zptHCS"
 
@@ -7,6 +11,7 @@ const supabaseClient = window.supabase.createClient(
     SUPABASE_KEY
 );
 
+// Top 10 scores, highest first
 async function getScores() {
     const { data, error } = await supabaseClient
         .from("scores")
@@ -14,12 +19,11 @@ async function getScores() {
         .order("score", { ascending: false })
         .limit(10);
 
-    console.log(data);
-    console.log(error);
-    return data;
-}
+    // Throw so callers can tell "no scores yet" apart from "request failed"
+    if (error) throw error;
 
-getScores();
+    return data || [];
+}
 
 async function submitScore(player, score) {
     const { data, error } = await supabaseClient
@@ -32,7 +36,7 @@ async function submitScore(player, score) {
         ])
         .select();
 
-    console.log(data);
-    console.log(error);
+    if (error) throw error;
 
+    return data;
 }

@@ -3,9 +3,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Lexicon League — a timed Wordle game with leaderboard">
+    <meta name="theme-color" content="#7ec8e3">
     <title>Lexicon League — Wordle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -13,7 +16,7 @@
 <body>
 
     <!-- Day/Night Toggle — always visible -->
-    <button id="w-theme" class="theme-toggle" title="Toggle Day/Night">
+    <button id="w-theme" class="theme-toggle" type="button" title="Toggle Day/Night" aria-label="Toggle day or night mode">
         <span class="theme-icon">☀️</span>
     </button>
 
@@ -25,77 +28,85 @@
             <div class="horizon-line"></div>
             <h2 class="start-prompt">Choose your time limit</h2>
             <div class="time-buttons">
-                <button id="onemin" class="time-btn">1 MIN</button>
-                <button id="threemin" class="time-btn">3 MIN</button>
+                <button id="onemin" class="time-btn" type="button">1 MIN</button>
+                <button id="threemin" class="time-btn" type="button">3 MIN</button>
             </div>
+            <p class="start-hint">
+                Solve as many words as you can before time runs out.<br>
+                Running out of guesses just moves you to a new word.
+            </p>
         </div>
     </div>
 
     <!-- ==================== GAME SCREEN ==================== -->
     <div id="game-screen" class="screen">
 
-        <div class="w-header">
-            <div class="w-score">SCORE: 0</div>
-            <div class="w-title">
-                <span class="title-main">LEXICON LEAGUE</span>
-                <span class="title-sub">WORDLE</span>
+        <div class="w-top">
+            <div class="w-header">
+                <div id="w-score" class="w-stat">
+                    <span class="stat-label">SCORE</span>
+                    <span class="stat-value" id="score-value">0</span>
+                </div>
+                <div class="w-title">
+                    <span class="title-main">LEXICON LEAGUE</span>
+                    <span class="title-sub">WORDLE</span>
+                </div>
+                <div id="w-timer" class="w-stat">
+                    <span class="stat-label">TIME</span>
+                    <span class="stat-value" id="timer-value">0:00</span>
+                </div>
             </div>
-            <div class="w-timer">TIMER: 0</div>
-        </div>
 
-        <div class="game-controls">
-            <button id="w-pause" class="ctrl-btn">⏸ PAUSE</button>
-            <button id="restart" class="ctrl-btn" disabled>↻ RESTART</button>
+            <div class="game-controls">
+                <button id="w-pause" class="ctrl-btn" type="button">⏸ PAUSE</button>
+                <button id="next-word" class="ctrl-btn" type="button" disabled>NEXT WORD ⏭</button>
+            </div>
+
+            <!-- Words already played this game -->
+            <div id="w-history" class="w-history">
+                <div id="history-track" class="history-track"></div>
+            </div>
         </div>
 
         <div id="w-board"></div>
 
-        <!-- Pause Overlay -->
-        <div id="pause-overlay">
-            <div class="pause-card">
-                <h2>PAUSED</h2>
-                <p>Take a breath...</p>
-                <button id="resume-btn" class="time-btn">▶ RESUME</button>
-            </div>
-        </div>
-
         <!-- On-screen Keyboard -->
         <div class="w-keyboard">
             <div class="w-keyboard-row">
-                <button class="key" data-key="Q">Q</button>
-                <button class="key" data-key="W">W</button>
-                <button class="key" data-key="E">E</button>
-                <button class="key" data-key="R">R</button>
-                <button class="key" data-key="T">T</button>
-                <button class="key" data-key="Y">Y</button>
-                <button class="key" data-key="U">U</button>
-                <button class="key" data-key="I">I</button>
-                <button class="key" data-key="O">O</button>
-                <button class="key" data-key="P">P</button>
+                <button class="key" type="button" data-key="Q">Q</button>
+                <button class="key" type="button" data-key="W">W</button>
+                <button class="key" type="button" data-key="E">E</button>
+                <button class="key" type="button" data-key="R">R</button>
+                <button class="key" type="button" data-key="T">T</button>
+                <button class="key" type="button" data-key="Y">Y</button>
+                <button class="key" type="button" data-key="U">U</button>
+                <button class="key" type="button" data-key="I">I</button>
+                <button class="key" type="button" data-key="O">O</button>
+                <button class="key" type="button" data-key="P">P</button>
+            </div>
+
+            <div class="w-keyboard-row w-keyboard-row-mid">
+                <button class="key" type="button" data-key="A">A</button>
+                <button class="key" type="button" data-key="S">S</button>
+                <button class="key" type="button" data-key="D">D</button>
+                <button class="key" type="button" data-key="F">F</button>
+                <button class="key" type="button" data-key="G">G</button>
+                <button class="key" type="button" data-key="H">H</button>
+                <button class="key" type="button" data-key="J">J</button>
+                <button class="key" type="button" data-key="K">K</button>
+                <button class="key" type="button" data-key="L">L</button>
             </div>
 
             <div class="w-keyboard-row">
-                <button class="key" data-key="A">A</button>
-                <button class="key" data-key="S">S</button>
-                <button class="key" data-key="D">D</button>
-                <button class="key" data-key="F">F</button>
-                <button class="key" data-key="G">G</button>
-                <button class="key" data-key="H">H</button>
-                <button class="key" data-key="J">J</button>
-                <button class="key" data-key="K">K</button>
-                <button class="key" data-key="L">L</button>
-            </div>
-
-            <div class="w-keyboard-row">
-                <button class="key key-wide" data-key="ENTER">ENTER</button>
-                <button class="key" data-key="Z">Z</button>
-                <button class="key" data-key="X">X</button>
-                <button class="key" data-key="C">C</button>
-                <button class="key" data-key="V">V</button>
-                <button class="key" data-key="B">B</button>
-                <button class="key" data-key="N">N</button>
-                <button class="key" data-key="M">M</button>
-                <button class="key key-wide" data-key="BACKSPACE">⌫</button>
+                <button class="key key-wide" type="button" data-key="ENTER">ENTER</button>
+                <button class="key" type="button" data-key="Z">Z</button>
+                <button class="key" type="button" data-key="X">X</button>
+                <button class="key" type="button" data-key="C">C</button>
+                <button class="key" type="button" data-key="V">V</button>
+                <button class="key" type="button" data-key="B">B</button>
+                <button class="key" type="button" data-key="N">N</button>
+                <button class="key" type="button" data-key="M">M</button>
+                <button class="key key-wide" type="button" data-key="BACKSPACE" aria-label="Backspace">⌫</button>
             </div>
         </div>
 
@@ -104,32 +115,48 @@
     <!-- ==================== GAME OVER SCREEN ==================== -->
     <div id="gameover-screen" class="screen">
         <div class="gameover-card">
-            <h2 class="gameover-title">GAME OVER</h2>
+            <h2 class="gameover-title">TIME'S UP</h2>
             <p id="final-score" class="final-score"></p>
 
+            <!-- Words played this game -->
+            <div id="gameover-words" class="gameover-words"></div>
+
             <div class="submit-section">
-                <input id="player-name" class="name-input" placeholder="ENTER YOUR NAME" maxlength="20">
-                <button id="submit" class="submit-btn">SUBMIT SCORE</button>
+                <input id="player-name" class="name-input" placeholder="YOUR NAME" maxlength="20"
+                       autocomplete="off" autocapitalize="characters" spellcheck="false"
+                       aria-label="Your name">
+                <button id="submit" class="submit-btn" type="button">SUBMIT SCORE</button>
             </div>
 
-            <button id="w-retry" class="retry-btn">↻ PLAY AGAIN</button>
+            <button id="w-retry" class="retry-btn" type="button">↻ PLAY AGAIN</button>
 
             <div class="horizon-line"></div>
 
             <div id="leaderboard">
                 <h3 class="leaderboard-title">🏆 LEADERBOARD</h3>
-                <table id="leaderboard-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Player</th>
-                            <th>Score</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboard-body">
-                    </tbody>
-                </table>
+                <div class="table-wrap">
+                    <table id="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Player</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body">
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Pause Overlay — outside the screens so it can cover the whole viewport -->
+    <div id="pause-overlay">
+        <div class="pause-card">
+            <h2>PAUSED</h2>
+            <p>Take a breath...</p>
+            <button id="resume-btn" class="time-btn" type="button">▶ RESUME</button>
         </div>
     </div>
 
