@@ -112,6 +112,7 @@ html {
     /* Behind the body: what shows through when the page rubber-bands past its
        edges, and what the browser samples for its own UI. */
     background: var(--bg-edge);
+    scrollbar-width: none;
 }
 
 body {
@@ -502,6 +503,7 @@ button,
 
 .history-track::-webkit-scrollbar {
     display: none;
+    
 }
 
 html::-webkit-scrollbar {
