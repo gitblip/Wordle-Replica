@@ -53,12 +53,14 @@ document.addEventListener("keydown", function(event) {
             //check the word
             guess = "";
             for (let i = 0; i < 5; i++) {
-                guess += tiles[CurrentTile - 5 + i].textContent;
+                guess += tiles[CurrentRow*5 + i].textContent;
             }
-
+            console.log(validWords.includes(guess), guess);
             if (validWords.includes(guess)) {
 
                 console.log("It is a valud word");
+                console.log("GUESS =", guess);
+                console.log("ANSWER =", ans);
                 let Check = checkGuess(guess, ans);
                 console.log(Check);
 
@@ -69,8 +71,8 @@ document.addEventListener("keydown", function(event) {
                 //change the keyboard tiles' colour
                 KeyboardColour(Check);
 
-                if (count == 5) {
-                    NewBoard();
+                if (Check.every(value => value === 2)) {
+                    NewBoard(true);
                 }
                 else if (CurrentRow == 6) {
                     gameOver = true;
@@ -149,7 +151,7 @@ function IncreaseScore() {
 }
 
 //New Board:
-function NewBoard() {
+function NewBoard(isNew = false) {
     board.innerHTML = "";
     gameOver = false;
     
@@ -160,7 +162,12 @@ function NewBoard() {
 
     ans = RandomWord();
 
-    IncreaseScore();
+    if (isNew) {
+        score = 0;
+        scoreboard.textContent = "SCORE: " + score;
+    }
+    else
+        IncreaseScore();
     Createboard();
     tiles = document.querySelectorAll(".w-tile");
     

@@ -10,14 +10,17 @@ let theme = document.getElementById("w-theme");
 let time = document.querySelector(".w-timer");
 let restart = document.getElementById("restart");
 
+restart.disabled = true;
+
 time.textContent = "TIMER: " + selectedtime;
 
 OneMin.addEventListener("click", function() {
     console.log("1 min selected");
-    selectedtime = 6;
-    remtime = 6;
+    selectedtime = 60;
+    remtime = 60;
     time.textContent = "TIMER: " + selectedtime;
-    NewBoard();
+    NewBoard(true);
+    restart.disabled = false;
 });
 
 ThreeMin.addEventListener("click", function() {
@@ -25,7 +28,8 @@ ThreeMin.addEventListener("click", function() {
     selectedtime = 180;
     remtime = 180;
     time.textContent = "TIMER: " + selectedtime;
-    NewBoard();
+    NewBoard(true);
+    restart.disabled = false;
 });
 
 paused.addEventListener("click", function() {
@@ -45,9 +49,11 @@ paused.addEventListener("click", function() {
 });
 
 restart.addEventListener("click", function() {
-    NewBoard();
-    score = 0;
-    scoreboard.textContent = "SCORE: " + score;
+    clearInterval(timer);
+    timer = null;
+    remtime = selectedtime;
+    time.textContent = "TIMER: " + remtime;
+    NewBoard(true);
 });
 
 function StartTimer() {
@@ -68,4 +74,9 @@ function StartTimer() {
     }, 1000);
 }
 
-
+//removing the focus from each button :/
+document.querySelectorAll("button").forEach(function(btn) {
+    btn.addEventListener("mousedown", function(e) {
+        e.preventDefault();
+    });
+});
