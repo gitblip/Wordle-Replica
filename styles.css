@@ -491,6 +491,11 @@ button,
     display: none;
 }
 
+html::-webkit-scrollbar {
+    display: none;
+}
+
+
 .chip {
     flex: 0 0 auto;
     padding: 4px 9px;
