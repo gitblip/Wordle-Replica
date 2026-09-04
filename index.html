@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lexicon League — a timed Wordle game with leaderboard">
+    <title>Lexicon League — Wordle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- Day/Night Toggle — always visible -->
+    <button id="w-theme" class="theme-toggle" title="Toggle Day/Night">
+        <span class="theme-icon">☀️</span>
+    </button>
+
+    <!-- ==================== START SCREEN ==================== -->
+    <div id="start-screen" class="screen active">
+        <div class="start-card">
+            <h1 class="start-title">LEXICON LEAGUE</h1>
+            <p class="start-subtitle">WORDLE</p>
+            <div class="horizon-line"></div>
+            <h2 class="start-prompt">Choose your time limit</h2>
+            <div class="time-buttons">
+                <button id="onemin" class="time-btn">1 MIN</button>
+                <button id="threemin" class="time-btn">3 MIN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== GAME SCREEN ==================== -->
+    <div id="game-screen" class="screen">
+
+        <div class="w-header">
+            <div class="w-score">SCORE: 0</div>
+            <div class="w-title">
+                <span class="title-main">LEXICON LEAGUE</span>
+                <span class="title-sub">WORDLE</span>
+            </div>
+            <div class="w-timer">TIMER: 0</div>
+        </div>
+
+        <div class="game-controls">
+            <button id="w-pause" class="ctrl-btn">⏸ PAUSE</button>
+            <button id="restart" class="ctrl-btn" disabled>↻ RESTART</button>
+        </div>
+
+        <div id="w-board"></div>
+
+        <!-- Pause Overlay -->
+        <div id="pause-overlay">
+            <div class="pause-card">
+                <h2>PAUSED</h2>
+                <p>Take a breath...</p>
+                <button id="resume-btn" class="time-btn">▶ RESUME</button>
+            </div>
+        </div>
+
+        <!-- On-screen Keyboard -->
+        <div class="w-keyboard">
+            <div class="w-keyboard-row">
+                <button class="key" data-key="Q">Q</button>
+                <button class="key" data-key="W">W</button>
+                <button class="key" data-key="E">E</button>
+                <button class="key" data-key="R">R</button>
+                <button class="key" data-key="T">T</button>
+                <button class="key" data-key="Y">Y</button>
+                <button class="key" data-key="U">U</button>
+                <button class="key" data-key="I">I</button>
+                <button class="key" data-key="O">O</button>
+                <button class="key" data-key="P">P</button>
+            </div>
+
+            <div class="w-keyboard-row">
+                <button class="key" data-key="A">A</button>
+                <button class="key" data-key="S">S</button>
+                <button class="key" data-key="D">D</button>
+                <button class="key" data-key="F">F</button>
+                <button class="key" data-key="G">G</button>
+                <button class="key" data-key="H">H</button>
+                <button class="key" data-key="J">J</button>
+                <button class="key" data-key="K">K</button>
+                <button class="key" data-key="L">L</button>
+            </div>
+
+            <div class="w-keyboard-row">
+                <button class="key key-wide" data-key="ENTER">ENTER</button>
+                <button class="key" data-key="Z">Z</button>
+                <button class="key" data-key="X">X</button>
+                <button class="key" data-key="C">C</button>
+                <button class="key" data-key="V">V</button>
+                <button class="key" data-key="B">B</button>
+                <button class="key" data-key="N">N</button>
+                <button class="key" data-key="M">M</button>
+                <button class="key key-wide" data-key="BACKSPACE">⌫</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==================== GAME OVER SCREEN ==================== -->
+    <div id="gameover-screen" class="screen">
+        <div class="gameover-card">
+            <h2 class="gameover-title">GAME OVER</h2>
+            <p id="final-score" class="final-score"></p>
+
+            <div class="submit-section">
+                <input id="player-name" class="name-input" placeholder="ENTER YOUR NAME" maxlength="20">
+                <button id="submit" class="submit-btn">SUBMIT SCORE</button>
+            </div>
+
+            <button id="w-retry" class="retry-btn">↻ PLAY AGAIN</button>
+
+            <div class="horizon-line"></div>
+
+            <div id="leaderboard">
+                <h3 class="leaderboard-title">🏆 LEADERBOARD</h3>
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Player</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="database.js"></script>
+<script src="words.js"></script>
+<script src="script.js"></script>
+<script src="timer.js"></script>
+<script src="leaderboard.js"></script>
+
+</body>
+</html>
