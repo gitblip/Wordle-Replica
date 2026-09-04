@@ -70,7 +70,7 @@ function startGameWithDuration(seconds) {
     pause = false;
     gamePaused = false;
     pauseOverlay.classList.remove("visible");
-    pauseBtn.textContent = "⏸ PAUSE";
+    pauseBtn.textContent = "❚❚ PAUSE";
 
     setModeChrome();
     NewBoard("reset");        // score 0, history cleared, fresh word, input enabled
@@ -427,7 +427,7 @@ function applyTheme(night) {
     // with it; mirrored onto <body> so body-scoped selectors keep working.
     document.documentElement.classList.toggle("night-mode", night);
     document.body.classList.toggle("night-mode", night);
-    themeIcon.textContent = night ? "🌙" : "☀️";
+    themeIcon.textContent = night ? "☾" : "☀︎";
     if (themeColorMeta) {
         // Read the real edge colour so the phone's top/bottom bars can never
         // drift out of sync with the page background.

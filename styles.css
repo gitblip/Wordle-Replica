@@ -1245,3 +1245,24 @@ html::-webkit-scrollbar {
         transition-duration: 0.01ms !important;
     }
 }
+
+
+.trophy {
+    position: relative;
+    top: -2px;
+}
+
+.xyz3 {
+    position: relative;
+    top: -1px;
+}
+
+.xyz1 {
+    position: relative;
+    top: -6px;
+}
+
+.xyz2 {
+    position: relative;
+    top: -20px;
+}

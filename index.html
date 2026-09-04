@@ -34,7 +34,7 @@
 
     <!-- Day/Night Toggle — always visible -->
     <button id="w-theme" class="theme-toggle" type="button" title="Toggle Day/Night" aria-label="Toggle day or night mode">
-        <span class="theme-icon">☀️</span>
+        <span class="theme-icon">☀︎</span>
     </button>
 
     <!-- ==================== START SCREEN ==================== -->
@@ -78,11 +78,11 @@
             </div>
 
             <div class="game-controls">
-                <button id="w-pause" class="ctrl-btn" type="button">⏸ PAUSE</button>
-                <button id="w-restart" class="ctrl-btn" type="button">↻ RESTART</button>
+                <button id="w-pause" class="ctrl-btn" type="button"><span class="xyz1">|| </span> PAUSE</button>
+                <button id="w-restart" class="ctrl-btn" type="button"><span class="xyz2">↻</span> RESTART</button>
                 <!-- Practice mode has no clock, so it needs an explicit way out -->
                 <button id="end-practice" class="ctrl-btn" type="button" hidden>✕ END</button>
-                <button id="next-word" class="ctrl-btn" type="button" disabled>NEXT WORD ⏭</button>
+                <button id="next-word" class="ctrl-btn" type="button" disabled>NEXT WORD <span class="xyz3">⏭</span></button>
             </div>
 
             <!-- Words already played this game -->
@@ -156,7 +156,7 @@
             <div class="horizon-line"></div>
 
             <div id="leaderboard">
-                <h3 class="leaderboard-title">🏆 LEADERBOARD</h3>
+                <h3 class="leaderboard-title"> <span class="trophy">🏆</span> LEADERBOARD</h3>
                 <div class="table-wrap">
                     <table id="leaderboard-table">
                         <thead>
