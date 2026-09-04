@@ -41,6 +41,7 @@
     --yellow: #e8b028;
     --gray: #7a8a9a;
     --danger: #d63b2a;
+    --danger-glow: rgba(214, 59, 42, 0.28);
     --overlay-bg: rgba(0, 0, 0, 0.4);
     --input-bg: rgba(255, 255, 255, 0.8);
     --input-border: rgba(100, 120, 140, 0.3);
@@ -84,6 +85,7 @@
     --yellow: #facc15;
     --gray: #64748b;
     --danger: #fb7185;
+    --danger-glow: rgba(251, 113, 133, 0.3);
     --overlay-bg: rgba(0, 0, 0, 0.6);
     --input-bg: rgba(30, 30, 60, 0.8);
     --input-border: rgba(100, 100, 180, 0.3);
@@ -821,6 +823,41 @@ html::-webkit-scrollbar {
     opacity: 0.55;
     cursor: not-allowed;
     transform: none;
+}
+
+/* ---------- Rejected Submission (nothing solved) ---------- */
+
+/* A toast is easy to miss on a phone, so the submit box answers back too:
+   one short shake, then a red border that stays put until the next game. */
+@keyframes rejectShake {
+    0%, 100% { transform: translateX(0); }
+    15%      { transform: translateX(-8px); }
+    30%      { transform: translateX(7px); }
+    45%      { transform: translateX(-5px); }
+    60%      { transform: translateX(4px); }
+    75%      { transform: translateX(-2px); }
+}
+
+.submit-section.rejected {
+    animation: rejectShake 0.45s ease;
+}
+
+.submit-section.rejected .name-input {
+    border-color: var(--danger);
+    /* A ring rather than a thicker border, so nothing reflows mid-shake */
+    box-shadow: 0 0 0 3px var(--danger-glow);
+}
+
+.submit-section.rejected .submit-btn {
+    border-color: var(--danger);
+    background: var(--danger);
+}
+
+/* Keep the colour for anyone who has asked for less motion, drop the movement */
+@media (prefers-reduced-motion: reduce) {
+    .submit-section.rejected {
+        animation: none;
+    }
 }
 
 .retry-btn {

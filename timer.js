@@ -45,7 +45,7 @@ RenderTimer();
 // listener registered further down this file (pause, retry, submit, theme).
 if (OneMin) {
     OneMin.addEventListener("click", function() {
-        startGameWithDuration(15);
+        startGameWithDuration(16);
     });
 }
 
@@ -307,8 +307,10 @@ function GameOver() {
     document.getElementById("final-score").textContent = "Final Score: " + score;
     RenderGameOverWords();
 
-    // Clear player name input and re-enable submitting
+    // Clear player name input, drop any leftover rejection styling, and
+    // re-enable submitting
     nameInput.value = "";
+    submitSection.classList.remove("rejected");
     submitBtn.disabled = false;
     submitBtn.textContent = "SUBMIT SCORE";
 
@@ -324,6 +326,7 @@ async function handleSubmit() {
     // Nothing was solved, so there is no result worth ranking
     if (score <= 0) {
         showToast("You need a score greater than 0 to be considered");
+        rejectSubmit();
         return;
     }
 
@@ -348,6 +351,15 @@ async function handleSubmit() {
         submitBtn.textContent = "SUBMIT SCORE";
         showToast("Could not submit score");
     }
+}
+
+// Shake the submit box and turn it red. Re-adding the class alone won't replay
+// the animation, so the class is dropped and a reflow forced first — otherwise
+// a second rejected click would look like nothing happened at all.
+function rejectSubmit() {
+    submitSection.classList.remove("rejected");
+    void submitSection.offsetWidth;
+    submitSection.classList.add("rejected");
 }
 
 submitBtn.addEventListener("click", handleSubmit);
