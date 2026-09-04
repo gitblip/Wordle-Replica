@@ -9,6 +9,7 @@ let paused = document.getElementById("w-pause");
 let theme = document.getElementById("w-theme"); 
 let time = document.querySelector(".w-timer");
 let restart = document.getElementById("restart");
+let retry = document.getElementById("w-retry");
 
 restart.disabled = true;
 
@@ -56,6 +57,10 @@ restart.addEventListener("click", function() {
     NewBoard(true);
 });
 
+retry.addEventListener("click", function() {
+    gameoverscreen.style.display = "none";
+});
+
 function StartTimer() {
     if (timer !== null) 
         return;
@@ -67,7 +72,7 @@ function StartTimer() {
         if (remtime <= 0) {
             clearInterval(timer);
             timer = null;
-            gameOver = true;
+            GameOver();
 
             console.log("GAME OVER");
         }
@@ -80,3 +85,20 @@ document.querySelectorAll("button").forEach(function(btn) {
         e.preventDefault();
     });
 });
+
+function ShowGameOver() {
+
+}
+
+function GameOver() {
+    gameOver = true;
+    ShowGameOver();
+    alert("GAME OVER");
+    clearInterval(timer);
+    timer = null;
+    remtime = selectedtime;
+    time.textContent = "TIMER: " + remtime;
+
+    let gameoverscreen = document.getElementById("w-gameover");
+    gameoverscreen.style.display = "block";
+}

@@ -75,7 +75,7 @@ document.addEventListener("keydown", function(event) {
                     NewBoard(true);
                 }
                 else if (CurrentRow == 6) {
-                    gameOver = true;
+                    GameOver();
                     alert("Out of guesses! The word was " + ans);
                     console.log("Out of guesses");
                 }
