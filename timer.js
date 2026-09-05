@@ -48,7 +48,7 @@ RenderTimer();
 // listener registered further down this file (pause, retry, submit, theme).
 if (OneMin) {
     OneMin.addEventListener("click", function() {
-        startGameWithDuration(16);
+        startGameWithDuration(15 * 60);
     });
 }
 
